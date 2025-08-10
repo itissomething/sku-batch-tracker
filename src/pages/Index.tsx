@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Package, TrendingUp, History } from "lucide-react";
+import { Plus, Package, TrendingUp, History, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { SKUManager } from "@/components/SKUManager";
 import { ProductionEntry } from "@/components/ProductionEntry";
 import { ProductionHistory } from "@/components/ProductionHistory";
+import { AdminPanel } from "@/components/AdminPanel";
 
 interface SKU {
   id: string;
@@ -26,7 +27,7 @@ interface Batch {
 }
 
 const Index = () => {
-  const [activeTab, setActiveTab] = useState<"production" | "skus" | "history">("production");
+  const [activeTab, setActiveTab] = useState<"production" | "skus" | "history" | "admin">("production");
   const [skus, setSKUs] = useState<SKU[]>([]);
   const [batches, setBatches] = useState<Batch[]>([]);
   const { toast } = useToast();
@@ -69,14 +70,23 @@ const Index = () => {
   };
 
   const getNextBatchNumber = (skuId: string): string => {
-    const skuBatches = batches.filter(batch => batch.skuId === skuId);
-    if (skuBatches.length === 0) {
+    const today = new Date();
+    const todayString = today.toDateString();
+    
+    // Filter batches for this SKU and today's date
+    const todaySkuBatches = batches.filter(batch => {
+      const batchDate = new Date(batch.createdAt);
+      return batch.skuId === skuId && batchDate.toDateString() === todayString;
+    });
+    
+    if (todaySkuBatches.length === 0) {
       return "001";
     }
     
-    const lastBatch = skuBatches[skuBatches.length - 1];
-    const lastNumber = parseInt(lastBatch.batchNumber);
-    return String(lastNumber + 1).padStart(3, '0');
+    // Get the highest batch number for today
+    const batchNumbers = todaySkuBatches.map(batch => parseInt(batch.batchNumber));
+    const maxBatchNumber = Math.max(...batchNumbers);
+    return String(maxBatchNumber + 1).padStart(3, '0');
   };
 
   const getTotalProduction = () => {
@@ -148,6 +158,14 @@ const Index = () => {
               <History className="w-4 h-4 mr-2" />
               Production History
             </Button>
+            <Button
+              variant={activeTab === "admin" ? "default" : "ghost"}
+              onClick={() => setActiveTab("admin")}
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary"
+            >
+              <Shield className="w-4 h-4 mr-2" />
+              Admin Panel
+            </Button>
           </div>
         </div>
       </nav>
@@ -171,6 +189,13 @@ const Index = () => {
         
         {activeTab === "history" && (
           <ProductionHistory
+            batches={batches}
+            skus={skus}
+          />
+        )}
+        
+        {activeTab === "admin" && (
+          <AdminPanel
             batches={batches}
             skus={skus}
           />
