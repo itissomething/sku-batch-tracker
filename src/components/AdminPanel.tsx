@@ -36,7 +36,9 @@ interface AdminPanelProps {
 const ADMIN_PASSWORD = "admin123"; // You can change this
 
 export const AdminPanel = ({ batches, skus }: AdminPanelProps) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return localStorage.getItem('adminAuthenticated') === 'true';
+  });
   const [password, setPassword] = useState("");
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [selectedSKU, setSelectedSKU] = useState<string>("all");
@@ -47,6 +49,7 @@ export const AdminPanel = ({ batches, skus }: AdminPanelProps) => {
     e.preventDefault();
     if (password === ADMIN_PASSWORD) {
       setIsAuthenticated(true);
+      localStorage.setItem('adminAuthenticated', 'true');
       setShowAuthDialog(false);
       setPassword("");
       toast({
@@ -64,6 +67,7 @@ export const AdminPanel = ({ batches, skus }: AdminPanelProps) => {
 
   const handleLogout = () => {
     setIsAuthenticated(false);
+    localStorage.removeItem('adminAuthenticated');
     setPassword("");
   };
 

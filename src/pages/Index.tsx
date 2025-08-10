@@ -106,23 +106,23 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border bg-card">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
+        <div className="container mx-auto px-2 sm:px-6 py-3 sm:py-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-foreground">Factory Production Tracker</h1>
-              <p className="text-muted-foreground">Manage SKUs and track production batches</p>
+              <h1 className="text-xl sm:text-3xl font-bold text-foreground">Factory Production Tracker</h1>
+              <p className="text-sm sm:text-base text-muted-foreground">Manage SKUs and track production batches</p>
             </div>
-            <div className="flex gap-4">
-              <Card className="px-4 py-2">
+            <div className="flex gap-2 sm:gap-4 w-full sm:w-auto">
+              <Card className="px-2 sm:px-4 py-2 flex-1 sm:flex-none">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-primary">{getTotalProduction()}</div>
-                  <div className="text-sm text-muted-foreground">Total Pieces</div>
+                  <div className="text-lg sm:text-2xl font-bold text-primary">{getTotalProduction()}</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Total Pieces</div>
                 </div>
               </Card>
-              <Card className="px-4 py-2">
+              <Card className="px-2 sm:px-4 py-2 flex-1 sm:flex-none">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-accent">{getTodayProduction()}</div>
-                  <div className="text-sm text-muted-foreground">Today's Production</div>
+                  <div className="text-lg sm:text-2xl font-bold text-accent">{getTodayProduction()}</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Today's Production</div>
                 </div>
               </Card>
             </div>
@@ -131,47 +131,47 @@ const Index = () => {
       </header>
 
       {/* Navigation */}
-      <nav className="border-b border-border bg-card">
-        <div className="container mx-auto px-6">
-          <div className="flex gap-1">
+      <nav className="border-b border-border bg-card overflow-x-auto">
+        <div className="container mx-auto px-2 sm:px-6">
+          <div className="flex gap-1 min-w-max sm:min-w-0">
             <Button
               variant={activeTab === "production" ? "default" : "ghost"}
               onClick={() => setActiveTab("production")}
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary text-xs sm:text-sm px-2 sm:px-4 whitespace-nowrap"
             >
-              <Plus className="w-4 h-4 mr-2" />
-              Production Entry
+              <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+              Production
             </Button>
             <Button
               variant={activeTab === "skus" ? "default" : "ghost"}
               onClick={() => setActiveTab("skus")}
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary text-xs sm:text-sm px-2 sm:px-4 whitespace-nowrap"
             >
-              <Package className="w-4 h-4 mr-2" />
-              SKU Management
+              <Package className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+              SKUs
             </Button>
             <Button
               variant={activeTab === "history" ? "default" : "ghost"}
               onClick={() => setActiveTab("history")}
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary text-xs sm:text-sm px-2 sm:px-4 whitespace-nowrap"
             >
-              <History className="w-4 h-4 mr-2" />
-              Production History
+              <History className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+              History
             </Button>
             <Button
               variant={activeTab === "admin" ? "default" : "ghost"}
               onClick={() => setActiveTab("admin")}
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary text-xs sm:text-sm px-2 sm:px-4 whitespace-nowrap"
             >
-              <Shield className="w-4 h-4 mr-2" />
-              Admin Panel
+              <Shield className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+              Admin
             </Button>
           </div>
         </div>
       </nav>
 
       {/* Main Content */}
-      <main className="container mx-auto px-6 py-8">
+      <main className="container mx-auto px-2 sm:px-6 py-4 sm:py-8">
         {activeTab === "production" && (
           <ProductionEntry
             skus={skus}
