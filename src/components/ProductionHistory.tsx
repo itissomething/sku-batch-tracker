@@ -26,8 +26,8 @@ interface Batch {
 }
 
 interface ProductionHistoryProps {
-  batches: Batch[];
-  skus: SKU[];
+  batches: any[];
+  skus: any[];
 }
 
 export const ProductionHistory = ({ batches, skus }: ProductionHistoryProps) => {
@@ -85,7 +85,7 @@ export const ProductionHistory = ({ batches, skus }: ProductionHistoryProps) => 
   };
 
   const getUniqueSkuCount = () => {
-    const uniqueSkus = new Set(filteredBatches.map(batch => batch.skuId));
+    const uniqueSkus = new Set(filteredBatches.map(batch => batch.sku_id));
     return uniqueSkus.size;
   };
 

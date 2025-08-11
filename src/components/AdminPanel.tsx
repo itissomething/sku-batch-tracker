@@ -29,8 +29,8 @@ interface Batch {
 }
 
 interface AdminPanelProps {
-  batches: Batch[];
-  skus: SKU[];
+  batches: any[];
+  skus: any[];
 }
 
 const ADMIN_PASSWORD = "admin123"; // You can change this

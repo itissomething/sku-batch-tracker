@@ -26,12 +26,11 @@ interface Batch {
 }
 
 interface ProductionEntryProps {
-  skus: SKU[];
-  onAddBatch: (batch: Omit<Batch, 'id' | 'createdAt'>) => void;
-  getNextBatchNumber: (skuId: string) => string;
+  skus: any[];
+  onAddBatch: (batch: { sku_id: string; pieces: number }) => Promise<boolean>;
 }
 
-export const ProductionEntry = ({ skus, onAddBatch, getNextBatchNumber }: ProductionEntryProps) => {
+export const ProductionEntry = ({ skus, onAddBatch }: ProductionEntryProps) => {
   const [selectedSKU, setSelectedSKU] = useState<SKU | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [pieces, setPieces] = useState("");
@@ -63,28 +62,25 @@ export const ProductionEntry = ({ skus, onAddBatch, getNextBatchNumber }: Produc
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmitBatch = (e: React.FormEvent) => {
+  const handleSubmitBatch = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!selectedSKU || !validateBatch()) {
       return;
     }
 
-    const batchNumber = getNextBatchNumber(selectedSKU.id);
-    
-    onAddBatch({
-      skuId: selectedSKU.id,
-      skuCode: selectedSKU.code,
-      skuName: selectedSKU.name,
-      batchNumber,
+    const success = await onAddBatch({
+      sku_id: selectedSKU.id,
       pieces: parseInt(pieces),
     });
 
-    // Reset form
-    setPieces("");
-    setDialogOpen(false);
-    setSelectedSKU(null);
-    setErrors({});
+    if (success) {
+      // Reset form
+      setPieces("");
+      setDialogOpen(false);
+      setSelectedSKU(null);
+      setErrors({});
+    }
   };
 
   const handlePiecesChange = (value: string) => {
@@ -140,7 +136,7 @@ export const ProductionEntry = ({ skus, onAddBatch, getNextBatchNumber }: Produc
                       )}
                       <div className="flex items-center gap-1 text-xs text-muted-foreground">
                         <Hash className="w-3 h-3" />
-                        Next Batch: {getNextBatchNumber(sku.id)}
+                        Next Batch: Auto-generated
                       </div>
                     </div>
                   </CardContent>
@@ -169,7 +165,7 @@ export const ProductionEntry = ({ skus, onAddBatch, getNextBatchNumber }: Produc
                 <div className="text-sm text-muted-foreground">{selectedSKU.name}</div>
                 <div className="flex items-center gap-2 text-sm">
                   <Hash className="w-4 h-4" />
-                  <span>Batch Number: <span className="font-mono font-medium">{getNextBatchNumber(selectedSKU.id)}</span></span>
+                  <span>Batch Number: <span className="font-mono font-medium">Auto-generated</span></span>
                 </div>
               </div>
 

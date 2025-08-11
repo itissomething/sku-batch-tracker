@@ -1,92 +1,38 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Package, TrendingUp, History, Shield } from "lucide-react";
+import { Plus, Package, TrendingUp, History, Shield, LogOut, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { useSKUs } from "@/hooks/useSKUs";
+import { useBatches } from "@/hooks/useBatches";
 import { SKUManager } from "@/components/SKUManager";
 import { ProductionEntry } from "@/components/ProductionEntry";
 import { ProductionHistory } from "@/components/ProductionHistory";
 import { AdminPanel } from "@/components/AdminPanel";
 
-interface SKU {
-  id: string;
-  code: string;
-  name: string;
-  description: string;
-  createdAt: Date;
-}
-
-interface Batch {
-  id: string;
-  skuId: string;
-  skuCode: string;
-  skuName: string;
-  batchNumber: string;
-  pieces: number;
-  createdAt: Date;
-}
-
 const Index = () => {
   const [activeTab, setActiveTab] = useState<"production" | "skus" | "history" | "admin">("production");
-  const [skus, setSKUs] = useState<SKU[]>([]);
-  const [batches, setBatches] = useState<Batch[]>([]);
+  const { user, loading: authLoading, signOut } = useAuth();
+  const { skus, loading: skusLoading, addSKU } = useSKUs();
+  const { batches, loading: batchesLoading, addBatch } = useBatches();
+  const navigate = useNavigate();
   const { toast } = useToast();
 
-  const addSKU = (sku: Omit<SKU, 'id' | 'createdAt'>) => {
-    // Check for duplicate SKU codes
-    if (skus.some(existingSKU => existingSKU.code.toLowerCase() === sku.code.toLowerCase())) {
-      toast({
-        title: "Error",
-        description: "SKU code already exists",
-        variant: "destructive",
-      });
-      return false;
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate("/auth");
     }
+  }, [user, authLoading, navigate]);
 
-    const newSKU: SKU = {
-      ...sku,
-      id: crypto.randomUUID(),
-      createdAt: new Date(),
-    };
-    setSKUs(prev => [...prev, newSKU]);
+  const handleSignOut = async () => {
+    await signOut();
     toast({
-      title: "Success",
-      description: "SKU added successfully",
+      title: "Signed out",
+      description: "You have been signed out successfully"
     });
-    return true;
-  };
-
-  const addBatch = (batch: Omit<Batch, 'id' | 'createdAt'>) => {
-    const newBatch: Batch = {
-      ...batch,
-      id: crypto.randomUUID(),
-      createdAt: new Date(),
-    };
-    setBatches(prev => [...prev, newBatch]);
-    toast({
-      title: "Success",
-      description: `Batch ${batch.batchNumber} added successfully`,
-    });
-  };
-
-  const getNextBatchNumber = (skuId: string): string => {
-    const today = new Date();
-    const todayString = today.toDateString();
-    
-    // Filter batches for this SKU and today's date
-    const todaySkuBatches = batches.filter(batch => {
-      const batchDate = new Date(batch.createdAt);
-      return batch.skuId === skuId && batchDate.toDateString() === todayString;
-    });
-    
-    if (todaySkuBatches.length === 0) {
-      return "001";
-    }
-    
-    // Get the highest batch number for today
-    const batchNumbers = todaySkuBatches.map(batch => parseInt(batch.batchNumber));
-    const maxBatchNumber = Math.max(...batchNumbers);
-    return String(maxBatchNumber + 1).padStart(3, '0');
+    navigate("/auth");
   };
 
   const getTotalProduction = () => {
@@ -96,11 +42,23 @@ const Index = () => {
   const getTodayProduction = () => {
     const today = new Date();
     const todayBatches = batches.filter(batch => {
-      const batchDate = new Date(batch.createdAt);
+      const batchDate = new Date(batch.created_at);
       return batchDate.toDateString() === today.toDateString();
     });
     return todayBatches.reduce((total, batch) => total + batch.pieces, 0);
   };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -112,7 +70,7 @@ const Index = () => {
               <h1 className="text-3xl font-bold text-foreground">Factory Production Tracker</h1>
               <p className="text-muted-foreground">Manage SKUs and track production batches</p>
             </div>
-            <div className="flex gap-4">
+            <div className="flex items-center gap-4">
               <Card className="px-4 py-2">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-primary">{getTotalProduction()}</div>
@@ -125,6 +83,15 @@ const Index = () => {
                   <div className="text-sm text-muted-foreground">Today's Production</div>
                 </div>
               </Card>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleSignOut}
+                className="flex items-center gap-2"
+              >
+                <LogOut className="h-4 w-4" />
+                Sign Out
+              </Button>
             </div>
           </div>
         </div>
@@ -172,33 +139,40 @@ const Index = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-6 py-8">
-        {activeTab === "production" && (
-          <ProductionEntry
-            skus={skus}
-            onAddBatch={addBatch}
-            getNextBatchNumber={getNextBatchNumber}
-          />
-        )}
-        
-        {activeTab === "skus" && (
-          <SKUManager
-            skus={skus}
-            onAddSKU={addSKU}
-          />
-        )}
-        
-        {activeTab === "history" && (
-          <ProductionHistory
-            batches={batches}
-            skus={skus}
-          />
-        )}
-        
-        {activeTab === "admin" && (
-          <AdminPanel
-            batches={batches}
-            skus={skus}
-          />
+        {(skusLoading || batchesLoading) ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : (
+          <>
+            {activeTab === "production" && (
+              <ProductionEntry
+                skus={skus}
+                onAddBatch={addBatch}
+              />
+            )}
+            
+            {activeTab === "skus" && (
+              <SKUManager
+                skus={skus}
+                onAddSKU={addSKU}
+              />
+            )}
+            
+            {activeTab === "history" && (
+              <ProductionHistory
+                batches={batches}
+                skus={skus}
+              />
+            )}
+            
+            {activeTab === "admin" && (
+              <AdminPanel
+                batches={batches}
+                skus={skus}
+              />
+            )}
+          </>
         )}
       </main>
     </div>

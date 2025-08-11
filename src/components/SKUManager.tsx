@@ -16,8 +16,8 @@ interface SKU {
 }
 
 interface SKUManagerProps {
-  skus: SKU[];
-  onAddSKU: (sku: Omit<SKU, 'id' | 'createdAt'>) => boolean;
+  skus: any[];
+  onAddSKU: (sku: { code: string; name: string; description?: string }) => Promise<boolean>;
 }
 
 export const SKUManager = ({ skus, onAddSKU }: SKUManagerProps) => {
